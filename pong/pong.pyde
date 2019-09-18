@@ -25,11 +25,15 @@ class Player():
 class Ball():
     speed = 6
     radius = 15
+    collidingWithPlayer = False
     x, y, xDir, yDir = screenX/2, screenY/2, 1, 1
 
     def move(self):
-        self.x = self.x + (self.speed * self.xDir)
-        self.y = self.y + (self.speed * self.yDir)
+        for i in range(self.speed):
+            self.x = self.x + (self.xDir)
+            self.y = self.y + (self.yDir)
+            if self.collisionCheck():
+                break
 
     def display(self):
         fill(255, 0, 0)
@@ -41,32 +45,51 @@ class Ball():
             self.yDir *= -1
             return True
         for player in players:
+            edge = {"x": "middle", "y": "middle"}
             edgeX, edgeY = self.x, self.y
             if (self.x < player.x):
+                edge["x"] = "left"
                 edgeX = player.x
             elif (self.x > player.x + player.w):
+                edge["x"] = "right"
                 edgeX = player.x + player.w
             if (self.y < player.y):
+                edge["y"] = "top"
                 edgeY = player.y
             elif (self.y > player.y + player.h):
+                edge["y"] = "bottom"
                 edgeY = player.y + player.h
             distX, distY = self.x - edgeX, self.y - edgeY
             if (sqrt((distX ** 2) + (distY ** 2)) <= ball.radius):
-                if (edgeX == player.x and edgeY == self.y) \
-                        or (edgeX == player.x + player.w and edgeY == self.y):
-                    print("hit x")
+                print(edge)
+                if (edge["x"] != "middle" and edge["y"] == "middle"): 
                     self.xDir *= -1
                     return True
-                elif (edgeX == self.x and edgeY == player.y) or \
-                        (edgeX == self.x and edgeY == player.y + player.h):
-                    print("hit y")
+                elif (edge["x"] == "middle" and edge["y"] != "middle"):
                     self.yDir *= -1
+                    self.collidingWithPlayer = True
                     return True
+                elif (edge["x"] == "middle" and edge["y"] == "middle"):
+                    print("this really shouldnt happen")
+                    print(edgeX, edgeY)
+                    print(distX, distY)
+                    print(sqrt((distX ** 2) + (distY ** 2)))
+                    exit()
                 else:
-                    print("hit corner")
-                    self.xDir *= -1
-                    self.yDir *= -1
+                    if (edge["x"] == "left" and edge["y"] == "top"):
+                        self.xDir = -1
+                    elif (edge["x"] == "right" and edge["y"] == "top"):
+                        self.xDir = 1
+                    elif (edge["x"] == "right" and edge["y"] == "bottom"):
+                        self.xDir = 1
+                    elif (edge["x"] == "left" and edge["y"] == "bottom"):
+                        self.xDir = -1
+                    if (player.velocity == 6):
+                        
+                    self.collidingWithPlayer = True
                     return True
+            else:
+                self.collidingWithPlayer = False
 
 
 def setup():
@@ -84,24 +107,25 @@ def draw():
     global ball, players
     background(255)
     if "w" in keysPressed and "s" not in keysPressed:
-        players[0].velocity = -4
+        players[0].velocity = -6
     elif "s" in keysPressed and "w" not in keysPressed:
-        players[0].velocity = 4
+        players[0].velocity = 6
     else:
         players[0].velocity = 0
     if "up" in keysPressed and "down" not in keysPressed:
-        players[1].velocity = -4
+        players[1].velocity = -6
     elif "down" in keysPressed and "up" not in keysPressed:
-        players[1].velocity = 4
+        players[1].velocity = 6
     else:
         players[1].velocity = 0
+    if ball.collidingWithPlayer:
+        for player in players:
+            player.velocity = 0
     for player in players:
         player.display()
         player.move()
     ball.display()
     ball.move()
-    if ball.collisionCheck():
-        ball.move()
 
 
 def convertKey(n):
