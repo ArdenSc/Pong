@@ -29,11 +29,16 @@ class Ball():
     x, y, xDir, yDir = screenX/2, screenY/2, 1, 1
 
     def move(self):
-        for i in range(self.speed):
-            self.x = self.x + (self.xDir)
-            self.y = self.y + (self.yDir)
-            if self.collisionCheck():
-                break
+        if not self.collidingWithPlayer:
+            for i in range(self.speed):
+                self.x = self.x + self.xDir
+                self.y = self.y + self.yDir
+                if self.collisionCheck():
+                    break
+        else:
+            self.x = self.x + (self.speed * self.xDir)
+            self.y = self.y + (self.speed * self.yDir)
+            self.collisionCheck()
 
     def display(self):
         fill(255, 0, 0)
@@ -62,13 +67,17 @@ class Ball():
             distX, distY = self.x - edgeX, self.y - edgeY
             if (sqrt((distX ** 2) + (distY ** 2)) <= ball.radius):
                 print(edge)
-                if (edge["x"] != "middle" and edge["y"] == "middle"): 
-                    self.xDir *= -1
-                    return True
+                self.collidingWithPlayer = True
+                if (edge["y"] == "middle" and edge["x"] != "middle"):
+                    if (edge["x"] == "left"):
+                        self.xDir = -1
+                    else:
+                        self.xDir = 1
                 elif (edge["x"] == "middle" and edge["y"] != "middle"):
-                    self.yDir *= -1
-                    self.collidingWithPlayer = True
-                    return True
+                    if (edge["y"] == "top"):
+                        self.yDir = -1
+                    else:
+                        self.yDir = 1
                 elif (edge["x"] == "middle" and edge["y"] == "middle"):
                     print("this really shouldnt happen")
                     print(edgeX, edgeY)
@@ -84,10 +93,7 @@ class Ball():
                         self.xDir = 1
                     elif (edge["x"] == "left" and edge["y"] == "bottom"):
                         self.xDir = -1
-                    if (player.velocity == 6):
-                        
-                    self.collidingWithPlayer = True
-                    return True
+                return True
             else:
                 self.collidingWithPlayer = False
 
